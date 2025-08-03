@@ -1,0 +1,15 @@
+# Backend
+/backend/target
+/backend/.mvn
+/backend/mvnw
+/backend/mvnw.cmd
+
+# Frontend
+/frontend/node_modules
+/frontend/build
+
+# IDE / OS
+.idea/
+*.iml
+*.log
+.DS_Store
