@@ -2,6 +2,7 @@ package com.sportisfun.backend.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,8 +27,10 @@ public class BetSlip {
     @Column(nullable = false)
     private BigDecimal stake;
 
+    @Positive
     private BigDecimal potentialWin;
 
+    @Min(1)
     private BigDecimal totalOdds;
 
     private boolean won;

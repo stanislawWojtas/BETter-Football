@@ -15,14 +15,18 @@ public class Match {
 
     @ManyToOne
     @JoinColumn(name = "league_id")
+    @Column(nullable = false)
     private League league;
 
     @ManyToOne
+    @Column(nullable = false)
     private Team homeTeam;
 
     @ManyToOne
+    @Column(nullable = false)
     private Team awayTeam;
 
+    @Column(nullable = false)
     private LocalDateTime startTime;
 
     @Positive
