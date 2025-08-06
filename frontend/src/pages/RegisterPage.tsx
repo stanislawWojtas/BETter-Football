@@ -85,6 +85,7 @@ const RegisterPage = () => {
                         setValue(cards[2].title);
                     }}
                     goToAvatarSelectionDisabled={goToAvatarSelectionDisabled}
+                    password={password}
                 />,
         disabled: setSecretsDisabled
     },
