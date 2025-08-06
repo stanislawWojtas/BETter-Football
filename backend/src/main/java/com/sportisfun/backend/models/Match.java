@@ -14,16 +14,15 @@ public class Match {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "league_id")
-    @Column(nullable = false)
+    @JoinColumn(name = "league_id", nullable = false)
     private League league;
 
     @ManyToOne
-    @Column(nullable = false)
+    @JoinColumn(nullable = false)
     private Team homeTeam;
 
     @ManyToOne
-    @Column(nullable = false)
+    @JoinColumn(nullable = false)
     private Team awayTeam;
 
     @Column(nullable = false)
