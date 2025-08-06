@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-container
+    restart: always
+    environment:
+      POSTGRES_DB: Better-football_DB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
