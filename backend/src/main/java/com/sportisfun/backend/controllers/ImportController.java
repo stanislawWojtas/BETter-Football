@@ -20,7 +20,7 @@ public class ImportController {
 
     @PostMapping("/matches/epl")
     public ResponseEntity<String> importEplMatches(@RequestBody List<MatchOddsApiResponse> matches){
-        matchService.importFromApi(matches);
+        matchService.importFromApi(matches, "Premier League", "England");
         return ResponseEntity.ok("Matches imported");
     }
 

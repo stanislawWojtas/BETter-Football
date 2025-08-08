@@ -22,7 +22,7 @@ public class Team {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    //@Column(nullable = false)
     private String logoUrl;
 
     @ManyToOne

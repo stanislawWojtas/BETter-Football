@@ -2,9 +2,11 @@ package com.sportisfun.backend.services;
 
 import com.sportisfun.backend.DTOs.MatchOddsApiResponse;
 import com.sportisfun.backend.DTOs.OutcomeDto;
+import com.sportisfun.backend.models.League;
 import com.sportisfun.backend.models.Match;
 import com.sportisfun.backend.models.Odds;
 import com.sportisfun.backend.models.Team;
+import com.sportisfun.backend.repositories.LeagueRepository;
 import com.sportisfun.backend.repositories.MatchRepository;
 import com.sportisfun.backend.repositories.OddsRepository;
 import com.sportisfun.backend.repositories.TeamRepository;
@@ -24,11 +26,19 @@ public class MatchService {
     private final TeamRepository teamRepository;
     private final MatchRepository matchRepository;
     private final OddsRepository oddsRepository;
+    private final LeagueRepository leagueRepository;
 
-    public void importFromApi(List<MatchOddsApiResponse> matches){
+    public void importFromApi(List<MatchOddsApiResponse> matches, String leagueName, String leagueCountry){
+        var league = leagueRepository.findByName(leagueName).orElseGet(() -> leagueRepository.save(League.builder()
+                .country(leagueCountry)
+                .name(leagueName)
+                .build()));
+
         for(MatchOddsApiResponse dto : matches){
             Team home = getOrCreateTeam(dto.getHomeTeam());
+            if(home.getLeague() == null) home.setLeague(league);
             Team away = getOrCreateTeam(dto.getAwayTeam());
+            if(away.getLeague() == null) away.setLeague(league);
 
             // Parsing the data
             LocalDateTime startTime = ZonedDateTime.parse(dto.getCommenceTime()).toLocalDateTime();
@@ -38,16 +48,20 @@ public class MatchService {
                 continue;
             }
 
+
             Match match = Match.builder()
                     .id((long) dto.getId().hashCode())
                     .homeTeam(home)
                     .awayTeam(away)
                     .startTime(startTime)
                     .finished(false)
+                    .league(league)
                     .build();
+
 
             Odds odds = extractOdds(dto);
             match.setOdds(odds);
+            odds.setMatch(match);
 
             // Cascade.ALL so it will also save the odds
             matchRepository.save(match);
