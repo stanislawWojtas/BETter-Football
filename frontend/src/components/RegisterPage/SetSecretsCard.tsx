@@ -1,5 +1,6 @@
 import { Box, Input, Field, VStack, Center, Button, Flex } from "@chakra-ui/react";
 import { PasswordInput, PasswordStrengthMeter,} from "@/components/ui/password-input";
+import { getPasswordStrength } from "@/utils/PasswordStrengthMeter";
 
 interface SetSecretsCardProps{
     onEmailChange: (email: string) => void;
@@ -7,9 +8,10 @@ interface SetSecretsCardProps{
     onRepeatPasswordChange: (confirmedPassword: string) => void;
     onClickNext: () => void;
     goToAvatarSelectionDisabled: boolean;
+    password: string
 }
 
-export const SetSecretsCard = ( {onEmailChange, onPasswordChange, onRepeatPasswordChange, onClickNext, goToAvatarSelectionDisabled}: SetSecretsCardProps) => {
+export const SetSecretsCard = ( {onEmailChange, onPasswordChange, onRepeatPasswordChange, onClickNext, goToAvatarSelectionDisabled, password}: SetSecretsCardProps) => {
      return (
         <Center>
             <VStack w={"70%"} gap={5}>
@@ -29,7 +31,7 @@ export const SetSecretsCard = ( {onEmailChange, onPasswordChange, onRepeatPasswo
                         size={'sm'}
                         onChange={(e) => { onPasswordChange(e.currentTarget.value)}}
                     />
-                    <PasswordStrengthMeter w={'80%'} value={3} paddingTop={2} align={'left'} />
+                    <PasswordStrengthMeter w={'80%'} value={getPasswordStrength(password)} paddingTop={2} align={'left'} />
                     <Field.ErrorText>This field is required</Field.ErrorText>
                 </Field.Root>
                 <Field.Root required>
