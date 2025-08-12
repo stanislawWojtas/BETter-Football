@@ -12,12 +12,14 @@ import com.sportisfun.backend.repositories.OddsRepository;
 import com.sportisfun.backend.repositories.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +30,29 @@ public class MatchService {
     private final OddsRepository oddsRepository;
     private final LeagueRepository leagueRepository;
 
+    @Transactional
     public void importFromApi(List<MatchOddsApiResponse> matches, String leagueName, String leagueCountry){
+        // skip matches without courses
+        matches = matches.stream()
+                .filter(match -> !match.getBookmakers().isEmpty())
+                .collect(Collectors.toList());
+
         var league = leagueRepository.findByName(leagueName).orElseGet(() -> leagueRepository.save(League.builder()
                 .country(leagueCountry)
                 .name(leagueName)
                 .build()));
 
         for(MatchOddsApiResponse dto : matches){
+
+            Odds odds = extractOdds(dto);
+
+            // if match already exist we just update the odds
+            if(matchRepository.existsById(dto.getId().hashCode())){
+                Match match = matchRepository.findById(dto.getId().hashCode()).orElseThrow();
+                updateOdds(match, dto);
+                continue;
+            }
+
             Team home = getOrCreateTeam(dto.getHomeTeam());
             if(home.getLeague() == null) home.setLeague(league);
             Team away = getOrCreateTeam(dto.getAwayTeam());
@@ -43,10 +61,7 @@ public class MatchService {
             // Parsing the data
             LocalDateTime startTime = ZonedDateTime.parse(dto.getCommenceTime()).toLocalDateTime();
 
-            // if match already exist
-            if(matchRepository.existsById(dto.getId().hashCode())){
-                continue;
-            }
+
 
 
             Match match = Match.builder()
@@ -59,7 +74,6 @@ public class MatchService {
                     .build();
 
 
-            Odds odds = extractOdds(dto);
             match.setOdds(odds);
             odds.setMatch(match);
 
@@ -98,5 +112,31 @@ public class MatchService {
                 .awayWin(awayWin)
                 .draw(draw)
                 .build();
+    }
+
+    private void updateOdds(Match match, MatchOddsApiResponse dto){
+
+        var outcomes = dto.getBookmakers().getFirst().getMarkets().getFirst().getOutcomes();
+
+        BigDecimal homeWin = null;
+        BigDecimal awayWin = null;
+        BigDecimal draw = null;
+
+        for(OutcomeDto outcome : outcomes){
+            if (outcome.getName().equals("Draw")){
+                draw = new BigDecimal(outcome.getPrice());
+            } else if (outcome.getName().equalsIgnoreCase(dto.getHomeTeam())){
+                homeWin = new BigDecimal(outcome.getPrice());
+            } else if (outcome.getName().equalsIgnoreCase(dto.getAwayTeam())){
+                awayWin = new BigDecimal(outcome.getPrice());
+            } else{
+                throw new RuntimeException("Cannot find the outcome " + outcome.getName() + "when getting the api data");
+            }
+        }
+
+        Odds odds = match.getOdds();
+        odds.setHomeWin(homeWin);
+        odds.setAwayWin(awayWin);
+        odds.setDraw(draw);
     }
 }
