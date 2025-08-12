@@ -3,6 +3,7 @@ package com.sportisfun.backend.services;
 import com.sportisfun.backend.DTOs.MatchOddsApiResponse;
 import com.sportisfun.backend.models.LeagueConfig;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +15,9 @@ public class ImportService {
     private final MatchService matchService;
     private final OddsApiClient oddsApiClient;
 
+    @Value("${bookmaker.key}")
+    private String bookmaker;
+
     public void importOddsData(String leagueId, String leagueRequestName){
         try{
             LeagueConfig leagueConfig = LeagueConfig.valueOf(leagueId.toUpperCase());
@@ -21,7 +25,7 @@ public class ImportService {
                     leagueRequestName,
                     "eu",
                     "h2h",
-                    "onexbet"
+                    bookmaker
             );
             matchService.importFromApi(matches, leagueConfig.getName(), leagueConfig.getCountry());
             System.out.println("Successfully imported odds data for league: " + leagueConfig.getName());
