@@ -23,13 +23,29 @@ public class MatchOddsService {
     private final LeagueRepository leagueRepository;
 
     public List<MatchOddsDto> getMatchOddsByLeague(String country) {
+        if(country == null){
+            List<Match> allMatches = matchRepository.findAllByFinishedFalseOrderByStartTimeAsc();
+            return mapToMatchOddsDto(allMatches);
+        }
 
         Long leagueId = leagueRepository.findByCountry(country).orElseThrow(
                         () -> new EntityNotFoundException("League not found for: " + country))
                 .getId();
-        List<Match> matches = matchRepository.findAllByLeague_Id(leagueId);
+        List<Match> matches = matchRepository.findAllByLeagueIdAndFinishedFalseOrderByStartTimeAsc(leagueId);
 
         return mapToMatchOddsDto(matches);
+    }
+
+    public List<MatchOddsDto> getMatchesByTeamName(String teamName) {
+        List<Match> allMatches = matchRepository.findAllByFinishedFalseOrderByStartTimeAsc();
+
+        List<Match> filteredMatches = allMatches.stream()
+                .filter(match ->
+                        match.getHomeTeam().getName().toLowerCase().contains(teamName.toLowerCase()) ||
+                        match.getAwayTeam().getName().toLowerCase().contains(teamName.toLowerCase()))
+                .collect(Collectors.toList());
+
+        return mapToMatchOddsDto(filteredMatches);
     }
 
 

@@ -21,4 +21,9 @@ public class MatchesOddsController {
     public List<MatchOddsDto> getUpcomingMatches(@RequestParam(required = false) String country) {
         return matchOddsService.getMatchOddsByLeague(country);
     }
+
+    @GetMapping("search")
+    public List<MatchOddsDto> searchMatchesByTeam(@RequestParam String teamName){
+        return matchOddsService.getMatchesByTeamName(teamName);
+    }
 }

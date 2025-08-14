@@ -10,5 +10,6 @@ import java.util.List;
 @Repository
 public interface MatchRepository extends JpaRepository<Match, Integer> {
 
-    List<Match> findAllByLeague_Id(Long leagueId);
+    List<Match> findAllByLeagueIdAndFinishedFalseOrderByStartTimeAsc(Long leagueId);
+    List<Match> findAllByFinishedFalseOrderByStartTimeAsc();
 }
