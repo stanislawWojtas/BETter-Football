@@ -1,17 +1,14 @@
 package com.sportisfun.backend.services;
 
 import com.sportisfun.backend.DTOs.MatchOddsDto;
-import com.sportisfun.backend.models.League;
 import com.sportisfun.backend.models.Match;
 import com.sportisfun.backend.repositories.LeagueRepository;
 import com.sportisfun.backend.repositories.MatchRepository;
-import com.sportisfun.backend.repositories.OddsRepository;
-import com.sportisfun.backend.repositories.TeamRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,20 +21,20 @@ public class MatchOddsService {
 
     public List<MatchOddsDto> getMatchOddsByLeague(String country) {
         if(country == null){
-            List<Match> allMatches = matchRepository.findAllByFinishedFalseOrderByStartTimeAsc();
+            List<Match> allMatches = matchRepository.findAllByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
             return mapToMatchOddsDto(allMatches);
         }
 
         Long leagueId = leagueRepository.findByCountry(country).orElseThrow(
                         () -> new EntityNotFoundException("League not found for: " + country))
                 .getId();
-        List<Match> matches = matchRepository.findAllByLeagueIdAndFinishedFalseOrderByStartTimeAsc(leagueId);
+        List<Match> matches = matchRepository.findAllByLeagueIdAndStartTimeAfterOrderByStartTimeAsc(leagueId,  LocalDateTime.now());
 
         return mapToMatchOddsDto(matches);
     }
 
     public List<MatchOddsDto> getMatchesByTeamName(String teamName) {
-        List<Match> allMatches = matchRepository.findAllByFinishedFalseOrderByStartTimeAsc();
+        List<Match> allMatches = matchRepository.findAllByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
 
         List<Match> filteredMatches = allMatches.stream()
                 .filter(match ->
