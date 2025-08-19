@@ -38,7 +38,7 @@ public class Match {
     @Positive
     private Integer awayGoals;
 
-    private boolean finished;
+    private boolean finished = false;
 
     @OneToMany(mappedBy = "match")
     private List<BetPick> betPicks;

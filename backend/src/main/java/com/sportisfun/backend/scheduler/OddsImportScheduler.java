@@ -19,8 +19,8 @@ public class OddsImportScheduler {
         System.out.println("\n IMPORTING >>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
         importService.importOddsData("epl", "soccer_epl");
         importService.importOddsData("la_liga", "soccer_spain_la_liga");
-        importService.importOddsData("serie_a", "soccer_germany_bundesliga");
-        importService.importOddsData("bundesliga", "soccer_italy_serie_a");
+        importService.importOddsData("bundesliga", "soccer_germany_bundesliga");
+        importService.importOddsData("serie_a", "soccer_italy_serie_a");
         importService.importOddsData("ligue_one", "soccer_france_ligue_one");
     }
 }
