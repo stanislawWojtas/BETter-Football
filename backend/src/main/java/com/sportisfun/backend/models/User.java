@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -34,7 +33,10 @@ public class User {
     @Size(min = 8)
     @Column(nullable = false)
     private String password;
-    //private String role;  // later gonna add ADMIN, USER
+
+    private Role role;
+
+    private String testingField;
 
     @OneToMany(
             mappedBy = "user"
