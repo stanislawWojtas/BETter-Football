@@ -1,3 +1,5 @@
+import * as React from 'react';
+import { getPresignedImageUrl } from "@/services/awsService";
 import { Box, Heading, VStack, Center, Button, Flex, Avatar, Dialog, Portal, For, CloseButton, Grid } from "@chakra-ui/react";
 
 interface ChooseAvatarCardProps {
@@ -14,13 +16,36 @@ interface ChooseAvatarCardProps {
 }
 
 export const ChooseAvatarCard = ({ selectedAvatar, firstName, lastName, finishDisabled, handleFinish, open, setOpen, handleClick, avatars, handleAvatarButtonClick}: ChooseAvatarCardProps) => {
+    const [urls, setUrls] = React.useState<Record<string, string>>({}); 
+    const [avatarUrl, setAvatarUrl] = React.useState<string>("");
+
+    React.useEffect(() => {
+        if (!selectedAvatar) return;
+
+        getPresignedImageUrl(selectedAvatar)
+        .then(url => setAvatarUrl(url))
+        .catch(err => console.error("Błąd pobierania URL:", err));
+
+    }, [selectedAvatar]);
+
+    React.useEffect(() => {
+        async function fetchUrls() {
+        const newUrls: Record<string, string> = {};
+        for (const avatar of avatars) {
+            newUrls[avatar] = await getPresignedImageUrl(avatar);
+        }
+        setUrls(newUrls);
+        }
+        fetchUrls();
+    }, [avatars]);
+    
     return (
                 <>
                 <Center paddingTop={15}>
                     <VStack gap={10}>
                         <Heading>Select avatar from available ones!</Heading>
                             <Avatar.Root size={"2xl"} onClick={() => handleAvatarButtonClick()} className="clickable-avatar">
-                                <Avatar.Image src={`avatars/${selectedAvatar}`}/>
+                                <Avatar.Image src={avatarUrl || undefined}/>
                                 <Avatar.Fallback name={firstName+lastName} />
                             </Avatar.Root>
                         <Box w="100%" paddingTop={20}>
@@ -55,7 +80,7 @@ export const ChooseAvatarCard = ({ selectedAvatar, firstName, lastName, finishDi
                                     <For each={avatars}>
                                         {(avatar) => (
                                             <Avatar.Root size={"2xl"} onClick={() => handleClick(avatar)} className="clickable-avatar">
-                                                <Avatar.Image src={`avatars/${avatar}`}/>
+                                                <Avatar.Image src={urls[avatar] || undefined}/>
                                                 <Avatar.Fallback />
                                             </Avatar.Root>
                                         )}
