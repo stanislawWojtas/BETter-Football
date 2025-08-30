@@ -45,5 +45,18 @@ public class UserService {
     public boolean validatePassword(String rawPassword, String encodedPassword){
         return passwordEncoder.matches(rawPassword, encodedPassword);
     }
+    public boolean userExistsByEmail(String email){
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    public void createUser(String username, String email, String password){
+        User u = User.builder()
+                .username(username)
+                .password(passwordEncoder.encode(password))
+                .email(email)
+                .role(Role.USER)
+                .build();
+        userRepository.save(u);
+    }
 
 }
