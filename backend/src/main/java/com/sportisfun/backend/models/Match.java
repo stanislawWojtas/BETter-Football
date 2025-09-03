@@ -18,31 +18,35 @@ public class Match {
     @Id
     private Long id;
 
-    @ManyToOne
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "league_id")
     private League league;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private Team homeTeam;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     private Team awayTeam;
 
     @Column(nullable = false)
     private LocalDateTime startTime;
 
-    @Positive
     private Integer homeGoals;
-    @Positive
     private Integer awayGoals;
 
     private boolean finished = false;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "match")
     private List<BetPick> betPicks;
 
-    @OneToOne(mappedBy = "match", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToOne(mappedBy = "match", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private Odds odds;
 }

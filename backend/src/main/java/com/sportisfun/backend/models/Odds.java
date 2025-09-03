@@ -1,9 +1,6 @@
 package com.sportisfun.backend.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,13 +20,14 @@ public class Odds {
     @GeneratedValue
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="match_id", nullable=false, unique=true)
     private Match match;
 
-    @Min(1)
+    @Column(precision=8, scale=2, nullable=false)
     private BigDecimal homeWin;
-    @Min(1)
+    @Column(precision=8, scale=2, nullable=false)
     private BigDecimal draw;
-    @Min(1)
+    @Column(precision=8, scale=2, nullable=false)
     private BigDecimal awayWin;
 }

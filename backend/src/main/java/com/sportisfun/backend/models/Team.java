@@ -1,10 +1,7 @@
 package com.sportisfun.backend.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -25,6 +22,8 @@ public class Team {
     //@Column(nullable = false)
     private String logoUrl;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne
     @JoinColumn(name="league_id")
     private League league;
