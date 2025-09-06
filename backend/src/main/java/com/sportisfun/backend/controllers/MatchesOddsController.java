@@ -22,7 +22,7 @@ public class MatchesOddsController {
         return matchOddsService.getMatchOddsByLeague(country);
     }
 
-    @GetMapping("search")
+    @GetMapping("/search")
     public List<MatchOddsDto> searchMatchesByTeam(@RequestParam String teamName){
         return matchOddsService.getMatchesByTeamName(teamName);
     }
