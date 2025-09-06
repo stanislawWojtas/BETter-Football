@@ -23,6 +23,7 @@ public class CustomUserDetails implements UserDetails {
         this.email = user.getEmail();
     }
 
+    //later when we will add admin role we have to change return list
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

@@ -43,7 +43,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Email already exists!");
         }
         if(userService.findByUsername(dto.getUsername()).isPresent()){
-            return ResponseEntity.badRequest().body("Username with this username already exists!");
+            return ResponseEntity.badRequest().body("Username already exists!");
         }
         userService.createUser(dto.getUsername(), dto.getEmail(), dto.getPassword());
         return ResponseEntity.ok().build();
