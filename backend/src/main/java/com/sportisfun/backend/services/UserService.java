@@ -19,32 +19,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User registerUser(UserRegistrationDto dto){
-        if(userRepository.findByUsername(dto.getUsername()).isPresent()){
-            throw new RuntimeException("Username already exists");
-        }
-
-        if(userRepository.findByEmail(dto.getEmail()).isPresent()){
-            throw new RuntimeException("Email already exists");
-        }
-
-        User user = User.builder()
-                .username(dto.getUsername())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .email(dto.getEmail())
-                .role(Role.USER)
-                .build();
-
-        return userRepository.save(user);
-    }
-
     public Optional<User> findByUsername(String username){
         return userRepository.findByUsername(username);
     }
 
-    public boolean validatePassword(String rawPassword, String encodedPassword){
-        return passwordEncoder.matches(rawPassword, encodedPassword);
-    }
     public boolean userExistsByEmail(String email){
         return userRepository.findByEmail(email).isPresent();
     }
