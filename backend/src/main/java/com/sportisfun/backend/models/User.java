@@ -27,13 +27,14 @@ public class User {
     private String username;
 
     @Email
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
 
     @Size(min = 8)
     @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @OneToMany(
