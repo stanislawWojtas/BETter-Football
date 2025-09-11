@@ -104,7 +104,10 @@ public class BetSlipService {
             throw new IllegalStateException("Bet slip must contain at least one pick");
         }
         slip.place(req.getStake());
-        betSlipRepository.save(slip);
+        user.setBalance(user.getBalance().subtract(slip.getStake()));
+// don't have to use save here cuz its auto
+//        betSlipRepository.save(slip);
+//        userRepository.save(user);
         return mapToBetSlipDto(slip);
     }
 

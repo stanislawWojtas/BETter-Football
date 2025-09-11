@@ -1,8 +1,11 @@
 package com.sportisfun.backend.services;
 
 import com.sportisfun.backend.DTOs.MatchOddsApiResponse;
+import com.sportisfun.backend.DTOs.MatchResultApiResponse;
 import com.sportisfun.backend.models.LeagueConfig;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +17,10 @@ public class ImportService {
 
     private final MatchService matchService;
     private final OddsApiClient oddsApiClient;
+    private final MatchResultsApiClient matchResultsApiClient;
+    private final ResultService resultService;
+
+    private final static Logger logger = LoggerFactory.getLogger(ImportService.class);
 
     @Value("${bookmaker.key}")
     private String bookmaker;
@@ -28,10 +35,21 @@ public class ImportService {
                     bookmaker
             );
             matchService.importFromApi(matches, leagueConfig.getName(), leagueConfig.getCountry());
-            System.out.println("Successfully imported odds data for league: " + leagueConfig.getName());
+            logger.info("Odds data imported successfully for league {}", leagueId);
         }catch (Exception e){
-            System.out.println("Error importing odds data for league " + leagueId + ": " + e.getMessage());
+            logger.error("Importing odds for league {} failed with message {}", leagueId, e.getMessage());
         }
+    }
+
+    public void importResultsData(String leagueRequestName){
+        try{
+            List<MatchResultApiResponse> matches = matchResultsApiClient.getScores(leagueRequestName, "3");
+            matchService.importScores(matches);
+            logger.info("Scores imported successfully for league {}", leagueRequestName);
+        } catch (Exception e){
+            logger.error("Importing results for league {} failed with message {}", leagueRequestName, e.getMessage());
+        }
+        resultService.resolveBets();
     }
 
 }
