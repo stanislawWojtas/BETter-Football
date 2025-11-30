@@ -1,7 +1,9 @@
 package com.sportisfun.backend.services;
 
 import com.sportisfun.backend.DTOs.MatchOddsApiResponse;
+import com.sportisfun.backend.DTOs.MatchResultApiResponse;
 import com.sportisfun.backend.DTOs.OutcomeDto;
+import com.sportisfun.backend.DTOs.ScoreDto;
 import com.sportisfun.backend.models.League;
 import com.sportisfun.backend.models.Match;
 import com.sportisfun.backend.models.Odds;
@@ -137,5 +139,36 @@ public class MatchService {
         odds.setHomeWin(homeWin);
         odds.setAwayWin(awayWin);
         odds.setDraw(draw);
+    }
+
+    @Transactional
+    public void importScores(List<MatchResultApiResponse> matches){
+        // skip matches without scores (when "scores" : null)
+        matches = matches.stream()
+                .filter(match -> match.getScores() != null && match.isCompleted())
+                .collect(Collectors.toList());
+
+        for(MatchResultApiResponse matchDto : matches){
+            String homeTeam = matchDto.getHomeTeam();
+            String awayTeam = matchDto.getAwayTeam();
+
+            int matchId = matchDto.getId().hashCode();
+
+            Match match = matchRepository.findById(matchId).orElseThrow(() -> new RuntimeException("Cannot find match with id " + matchId));
+
+            for(ScoreDto score : matchDto.getScores()){
+                if(score.getName().equalsIgnoreCase(homeTeam)){
+                    match.setHomeGoals(Integer.parseInt(score.getScore()));
+                }else if(score.getName().equalsIgnoreCase(awayTeam)){
+                    match.setAwayGoals(Integer.parseInt(score.getScore()));
+                }
+                else{
+                    throw new RuntimeException("Cannot find the score" + score.getName());
+                }
+            }
+
+            match.setFinished(true);
+            matchRepository.save(match);
+        }
     }
 }

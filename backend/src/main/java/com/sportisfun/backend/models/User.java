@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -33,6 +34,10 @@ public class User {
     @Size(min = 8)
     @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private BigDecimal balance =  BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     private Role role;

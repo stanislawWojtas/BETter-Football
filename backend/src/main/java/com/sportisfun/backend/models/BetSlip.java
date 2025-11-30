@@ -88,9 +88,14 @@ public class BetSlip {
     public void settle(){
         if(status != BetSlipStatus.PLACED) throw new IllegalStateException("Coupon is not PLACED");
         boolean allResolved = betPicks.stream().allMatch(p -> p.getResult() != BetPickResult.PENDING);
+        boolean allWin = getBetPicks().stream()
+                .allMatch(p -> p.getResult() == BetPickResult.WIN);
         if(!allResolved) return;
-        //this.won = betPicks.stream().allMatch(p -> p.getResult() == BetPickResult.WIN);
-        this.status = BetSlipStatus.SETTLED;
+        if(allWin){
+            this.status = BetSlipStatus.WON;
+        }else{
+            this.status = BetSlipStatus.LOST;
+        }
         settledAt = LocalDateTime.now();
     }
 

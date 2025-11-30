@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface BetSlipRepository extends JpaRepository<BetSlip, Long> {
     List<BetSlip> findAllByUserId(Long id);
     Optional<BetSlip> findFirstByUser_IdAndStatus(Long id, BetSlipStatus status);
+    List<BetSlip> findAllByStatus(BetSlipStatus status);
 }
