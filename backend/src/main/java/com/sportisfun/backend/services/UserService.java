@@ -27,12 +27,14 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
-    public void createUser(String username, String email, String password){
+    public void createUser(UserRegistrationDto dto){
         User u = User.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .email(email)
+                .username(dto.getUsername())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .email(dto.getEmail())
                 .role(Role.USER)
+                .firstname(dto.getFirstName())
+                .lastname(dto.getLastName())
                 .build();
         userRepository.save(u);
     }
