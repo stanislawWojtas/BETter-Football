@@ -15,13 +15,21 @@ export interface UserRegistrationDto {
 
 export interface TokenResponse{
 	token: string;
+	userId: number;
+	username: string;
+}
+
+export interface BalanceResponse {
+	balance: number;
 }
 
 export const AuthService = {
 	login: async (data: UserLoginDto) => {
 		const response = await api.post<TokenResponse>('/api/auth/login', data);
 		if(response.data.token){
-			localStorage.setItem('token', response.data.token)
+			localStorage.setItem('token', response.data.token);
+			localStorage.setItem('userId', response.data.userId.toString());
+			localStorage.setItem('username', response.data.username);
 		}
 		return response.data;
 	},
@@ -40,5 +48,9 @@ export const AuthService = {
 
 	isAuthenticated: () => {
 		return !!localStorage.getItem('token');
+	},
+
+	getBalance: async () => {
+		return await api.get<BalanceResponse>('/api/users/balance');
 	}
 }

@@ -1,3 +1,5 @@
+import { useBetSlip } from "@/context/BetSlipContext";
+import { BetOption } from "@/services/betSlipService";
 import type { MatchOdds } from "@/services/matchService";
 import { Badge, Box, Button, Flex, Grid, Heading, Separator, Text } from "@chakra-ui/react";
 import React from "react";
@@ -8,6 +10,8 @@ interface MatchCardProps{
 
 
 export const MatchCard = React.memo(({match}: MatchCardProps) => {
+	// use the context
+	const {addPick, isLoading} = useBetSlip();
 
 	//date formatting
 	const { dateStr, timeStr, weekdayStr } = React.useMemo(() => {
@@ -49,15 +53,15 @@ export const MatchCard = React.memo(({match}: MatchCardProps) => {
 
 			{/* Kursy (jako przyciski) */}
 			<Grid templateColumns="repeat(3, 1fr)" gap={2}>
-				<OddsButton label="1" value={match.homeWin} />
-				<OddsButton label="X" value={match.draw} />
-				<OddsButton label="2" value={match.awayWin} />
+				<OddsButton label="1" value={match.homeWin} onClick={() => addPick(match.id, BetOption.HOME)} disabled={isLoading}/>
+				<OddsButton label="X" value={match.draw} onClick={() => addPick(match.id, BetOption.DRAW)} disabled={isLoading}/>
+				<OddsButton label="2" value={match.awayWin} onClick={() => addPick(match.id, BetOption.AWAY)} disabled={isLoading}/>
 			</Grid>
 		</Box>
 	)
 });
 
-const OddsButton = ({label, value}: {label:string, value:number}) => {
+const OddsButton = ({label, value, onClick, disabled}: {label:string, value:number, onClick: () => void, disabled:boolean}) => {
 	return(
 		<>
 			<Button
@@ -67,7 +71,12 @@ const OddsButton = ({label, value}: {label:string, value:number}) => {
 				py={2}
 				flexDirection='column'
 				gap={0}
-				_hover={{bg: "cyan.50", borderColor: "cyan.500", color:'cyan.700'}}>
+				_hover={{bg: "cyan.50", borderColor: "cyan.500", color:'cyan.700'}}
+				onClick={(e) => {
+					e.stopPropagation();
+					onClick();
+				}}
+				disabled={disabled}>
 					<Text fontSize='xs' color='gray.500'>{label}</Text>
 					<Text fontWeight='bold' fontSize='md'>{value.toFixed(2)}</Text>
 			</Button>

@@ -1,15 +1,34 @@
-import { useEffect, useState, useMemo, useDeferredValue, startTransition } from 'react';
+import { useEffect, useState, useMemo, useDeferredValue, startTransition, use } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, HStack, Flex, Spacer, Link, Container, Grid, Spinner, Center, Heading, Tabs, Input } from "@chakra-ui/react"
+import { Box, Button, HStack, Flex, Spacer, Link, Container, Grid, Spinner, Center, Heading, Tabs, Input, Text } from "@chakra-ui/react"
 import { matchService } from '@/services/matchService';
 import { MatchCard } from '@/components/Matches/MatchCard';
 import { AuthService } from '@/services/authService';
 import type { MatchOdds } from '@/services/matchService';
+import { BetSlipProvider, useBetSlip } from '@/context/BetSlipContext';
+import { BetSlipDrawer } from '@/components/BetSlip/BetSlipDrawer';
+import { LuTicket } from 'react-icons/lu';
 // import { FiSearch } from 'react-icons/fi';
 
 export const Navbar = () => {
   const navigate = useNavigate();
   const isLoggedIn = AuthService.isAuthenticated();
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if(isLoggedIn){
+      const fetchBalance = async () => {
+        try{
+          const bal = await AuthService.getBalance();
+          setBalance(bal.data.balance);
+        }catch(error){
+          console.error("Failed to fetch balance", error);
+          setBalance(0);
+        }
+      };
+      fetchBalance();
+    }
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     AuthService.logout();
@@ -24,6 +43,20 @@ export const Navbar = () => {
         <HStack gap={6}>
           <Link color={'white'} fontWeight="medium" href="/">Mecze</Link>
           {isLoggedIn ? (
+            <>
+          
+              <Button variant={"ghost"} color={'white'} _hover={{bg: "whiteAlpha.200"}} onClick={() => navigate('/friends')}>
+                Znajomi
+              </Button>
+
+             <Button 
+               variant="ghost"
+               color="white"
+               _hover={{ bg: "whiteAlpha.200" }}
+               onClick={() => navigate('/my-bets')}
+             >
+               Moje zakłady
+             </Button>
              <Button 
                bg="white" 
                color="blue.600" 
@@ -35,6 +68,9 @@ export const Navbar = () => {
              >
                Wyloguj
              </Button>
+             <Text fontWeight="bold" color="white">Witaj, {localStorage.getItem('username')}</Text>
+             <Text fontWeight={'bold'} color={balance !== null ? (balance > 0 ? "green.400" : balance < 0 ? "red.400" : "white") : "white"}>{balance !== null ? `Saldo: ${balance} PLN` : ''}</Text>
+            </>
           ) : (
             <>
               <Link color={'white'} onClick={() => navigate("/login")}>Logowanie</Link>
@@ -152,66 +188,71 @@ const MainPage = () => {
   return (
     <Box minH="100vh" bg="gray.50">
       <Navbar />
-      
-      <Container maxW="1200px" py={8}>
-        {/* Filtry Lig */}
-        <Box mb={8}>
-          <Tabs.Root 
-            value={selectedLeague} 
-            onValueChange={(e) => setSelectedLeague(e.value)} 
-            variant="plain"
-          >
-            <Tabs.List
-              bg="white"
-              p={1}
-              rounded="lg"
-              shadow="sm"
-              display="flex"
-              w="fit-content"
-              mx="auto"
-            >
-              {leagues.map(league => (
-                <Tabs.Trigger 
-                  key={league.value} 
-                  value={league.value}
-                  px={4}
-                  py={2}
-                  rounded="md"
-                  _selected={{ bg: "blue.50", color: "blue.600", fontWeight: "bold" }}
+      {AuthService.isAuthenticated() ? 
+        <>
+          <BetSlipDrawer/>
+          <Container maxW="1200px" py={8}>
+            {/* Filtry Lig */}
+            <Box mb={8}>
+              <Tabs.Root 
+                value={selectedLeague} 
+                onValueChange={(e) => setSelectedLeague(e.value)} 
+                variant="plain"
+              >
+                <Tabs.List
+                  bg="white"
+                  p={1}
+                  rounded="lg"
+                  shadow="sm"
+                  display="flex"
+                  w="fit-content"
+                  mx="auto"
                 >
-                  {league.label}
-                </Tabs.Trigger>
-              ))}
-            </Tabs.List>
-          </Tabs.Root>
-        </Box>
+                  {leagues.map(league => (
+                    <Tabs.Trigger 
+                      key={league.value} 
+                      value={league.value}
+                      px={4}
+                      py={2}
+                      rounded="md"
+                      _selected={{ bg: "blue.50", color: "blue.600", fontWeight: "bold" }}
+                    >
+                      {league.label}
+                    </Tabs.Trigger>
+                  ))}
+                </Tabs.List>
+              </Tabs.Root>
+            </Box>
 
-        <SearchBar query={query} setQuery={setQuery} isSearching={isSearching} />
-        
+            <SearchBar query={query} setQuery={setQuery} isSearching={isSearching} />
+            
 
-        {/* Lista Meczów */}
-        {isLoading ? (
-          <Center h="200px">
-            <Spinner size="xl" color="blue.500" />
-          </Center>
-        ) : (
-          <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" }} gap={6}>
-            {matches.length > 0 ? (
-              matches.map((match) => (
-                <MatchCard key={match.id} match={match} />
-              ))
-            ) : (
-              <Center gridColumn="1 / -1" p={10}>
-                <Heading size="md" color="gray.500">
-                  {isSearching ? 'Brak wyników wyszukiwania.' : 'Brak nadchodzących meczów w tej lidze.'}
-                </Heading>
+            {/* Lista Meczów */}
+            {isLoading ? (
+              <Center h="200px">
+                <Spinner size="xl" color="blue.500" />
               </Center>
+            ) : (
+              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(2, 1fr)" }} gap={6}>
+                {matches.length > 0 ? (
+                  matches.map((match) => (
+                    <MatchCard key={match.id} match={match} />
+                  ))
+                ) : (
+                  <Center gridColumn="1 / -1" p={10}>
+                    <Heading size="md" color="gray.500">
+                      {isSearching ? 'Brak wyników wyszukiwania.' : 'Brak nadchodzących meczów w tej lidze.'}
+                    </Heading>
+                  </Center>
+                )}
+              </Grid>
             )}
-          </Grid>
-        )}
-      </Container>
+          </Container>
+        </>
+        : <Text fontWeight={'bold'} textAlign={'center'} margin={10} fontSize={'xx-large'}>Log in to see upcoming matches</Text>}; 
     </Box>
   );
 };
+
 
 export default MainPage;
