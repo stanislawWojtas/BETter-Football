@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/betslip")
 @RequiredArgsConstructor
@@ -36,5 +38,15 @@ public class BetSlipController {
     @PostMapping("/place")
     public BetSlipDto place(@RequestBody @Valid PlaceBetSlipRequest req, @AuthenticationPrincipal CustomUserDetails userDetails){
         return betSlipService.place(req, userDetails.getId());
+    }
+
+    @GetMapping("/history")
+    public List<BetSlipDto> getHistory(@AuthenticationPrincipal CustomUserDetails userDetails){
+        return betSlipService.getHistory(userDetails.getId());
+    }
+
+    @GetMapping("/history/{userId}")
+    public List<BetSlipDto> getHistory(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long userId){
+        return betSlipService.getHistory(userId);
     }
 }

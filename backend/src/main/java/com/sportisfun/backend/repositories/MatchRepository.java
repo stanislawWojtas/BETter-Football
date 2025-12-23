@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface MatchRepository extends JpaRepository<Match, Integer> {
+public interface MatchRepository extends JpaRepository<Match, Long> {
 
     List<Match> findAllByLeagueIdAndStartTimeAfterOrderByStartTimeAsc(Long leagueId, LocalDateTime now);
     List<Match> findAllByStartTimeAfterOrderByStartTimeAsc(LocalDateTime now);
