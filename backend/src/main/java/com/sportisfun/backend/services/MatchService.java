@@ -13,6 +13,8 @@ import com.sportisfun.backend.repositories.MatchRepository;
 import com.sportisfun.backend.repositories.OddsRepository;
 import com.sportisfun.backend.repositories.TeamRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,8 @@ public class MatchService {
     private final OddsRepository oddsRepository;
     private final LeagueRepository leagueRepository;
 
+    private final static Logger logger = LoggerFactory.getLogger(MatchService.class);
+
     @Transactional
     public void importFromApi(List<MatchOddsApiResponse> matches, String leagueName, String leagueCountry){
         // skip matches without courses
@@ -48,8 +52,8 @@ public class MatchService {
             Odds odds = extractOdds(dto);
 
             // if match already exist we just update the odds
-            if(matchRepository.existsById(dto.getId().hashCode())){
-                Match match = matchRepository.findById(dto.getId().hashCode()).orElseThrow();
+            if(matchRepository.existsById( (long)dto.getId().hashCode())){
+                Match match = matchRepository.findById((long)dto.getId().hashCode()).orElseThrow();
                 updateOdds(match, dto);
                 continue;
             }
@@ -152,7 +156,12 @@ public class MatchService {
             String homeTeam = matchDto.getHomeTeam();
             String awayTeam = matchDto.getAwayTeam();
 
-            int matchId = matchDto.getId().hashCode();
+            long matchId = (long) matchDto.getId().hashCode();
+
+            var matchOptional = matchRepository.findById(matchId);
+            if(matchOptional.isEmpty()){
+                continue;
+            }
 
             Match match = matchRepository.findById(matchId).orElseThrow(() -> new RuntimeException("Cannot find match with id " + matchId));
 

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,11 +22,15 @@ public class JwtUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+//    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final Key key;
+
     private final long tokenValidityMs;
 
-    public JwtUtil(@Value("${security.jwt.validity-ms}")  long tokenValidityMs) {
+    public JwtUtil(@Value("${security.jwt.validity-ms}")  long tokenValidityMs,
+                   @Value("${security.jwt.secret}")String secret) {
         this.tokenValidityMs = tokenValidityMs;
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(CustomUserDetails userDetails) {
@@ -41,7 +46,7 @@ public class JwtUtil {
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(exp)
-                .signWith(key)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 

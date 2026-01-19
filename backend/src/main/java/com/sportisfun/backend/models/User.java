@@ -1,5 +1,6 @@
 package com.sportisfun.backend.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -35,10 +36,12 @@ public class User {
 
     @Email
     @Column(unique = true, nullable = false, length = 100)
+    @JsonIgnore
     private String email;
 
     @Size(min = 8)
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(nullable = false)
@@ -46,6 +49,7 @@ public class User {
     private BigDecimal balance =  BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
+    @JsonIgnore
     private Role role;
 
     @OneToMany(

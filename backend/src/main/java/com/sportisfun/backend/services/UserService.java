@@ -5,10 +5,14 @@ import com.sportisfun.backend.models.Role;
 import com.sportisfun.backend.models.User;
 import com.sportisfun.backend.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -37,6 +41,12 @@ public class UserService {
                 .lastname(dto.getLastName())
                 .build();
         userRepository.save(u);
+    }
+
+    public ResponseEntity<Map<String, BigDecimal>> getBalance(Long userId){
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        return ResponseEntity.ok(Collections.singletonMap("balance", u.getBalance()));
     }
 
 }

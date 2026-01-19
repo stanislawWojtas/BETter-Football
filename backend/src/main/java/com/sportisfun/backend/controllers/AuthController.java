@@ -47,7 +47,7 @@ public class AuthController {
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
             CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
             String token = jwtUtil.generateToken(userDetails);
-            return ResponseEntity.ok(new TokenResponse(token));
+            return ResponseEntity.ok(new TokenResponse(token, userDetails.getId(), userDetails.getUsername()));
         }catch (RuntimeException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }

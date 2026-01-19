@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,16 +53,16 @@ public class BetSlipService {
                         return betSlipRepository.save(s);
                         });
         // This may cause problem cuz we cast from long to int later we have to change it!!!
-        Match match = matchRepository.findById(Math.toIntExact(addPickDto.getMatchId())).orElseThrow(
+        Match match = matchRepository.findById(addPickDto.getMatchId()).orElseThrow(
                 () -> new IllegalArgumentException("Match with id: " + addPickDto.getMatchId() + " does not exist")
         );
         if(match.isFinished()){
             throw new IllegalStateException("Cannot add match that has already ended");
         }
-        boolean alreadyInSlip = slip.getBetPicks().stream()
-                .anyMatch(p -> p.getMatch().getId().equals(match.getId()));
-        if(alreadyInSlip){
-            throw new IllegalStateException("Match is already in slip. Remove it first");
+        BetPick usedPick = slip.getBetPicks().stream()
+                    .filter(p -> p.getMatch().getId().equals(match.getId())).findFirst().orElse(null);
+        if(usedPick != null){
+            slip.removePick(usedPick);
         }
 
         BigDecimal odd = extractOdds(addPickDto.getBetOption(), match.getOdds());
@@ -111,6 +112,22 @@ public class BetSlipService {
         return mapToBetSlipDto(slip);
     }
 
+    @Transactional(readOnly = true)
+    public List<BetSlipDto> getHistory(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("User not found"));
+
+        return betSlipRepository.findAllByUserId(userId).stream()
+                .filter(slip -> slip.getStatus() != BetSlipStatus.DRAFT)
+                .sorted((a,b) -> {
+                    if(a.getStatus() == BetSlipStatus.PLACED && b.getStatus() != BetSlipStatus.PLACED) return -1;
+                    if (a.getStatus() != BetSlipStatus.PLACED && b.getStatus() == BetSlipStatus.PLACED) return 1;
+                    return b.getPlacedAt().compareTo(a.getPlacedAt());
+                })
+                .map(this::mapToBetSlipDto)
+                .collect(Collectors.toList());
+    };
+
+
     private BigDecimal extractOdds(BetOption betOption, Odds odds){
         if(odds == null){
             throw new IllegalArgumentException("There are no odds for this match");
@@ -130,6 +147,9 @@ public class BetSlipService {
                 .map(p -> BetPickDto.builder()
                         .id(p.getId())
                         .matchId(p.getMatch().getId())
+                        .homeTeam(p.getMatch().getHomeTeam().getName())
+                        .awayTeam(p.getMatch().getAwayTeam().getName())
+                        .matchDate(p.getMatch().getStartTime())
                         .option(p.getBetOption())
                         .selectedOdds(p.getSelectedOdd())
                         .result(p.getResult())

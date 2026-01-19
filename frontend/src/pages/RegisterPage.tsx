@@ -6,6 +6,8 @@ import { validateName, validateUsername, validateConfirmedPassword, validateEmai
 import { AboutYouCard } from '@/components/RegisterPage/AboutYouCard';
 import { SetSecretsCard } from '@/components/RegisterPage/SetSecretsCard';
 import { ChooseAvatarCard } from '@/components/RegisterPage/ChooseAvatarCard';
+import { AuthService } from '@/services/authService';
+import { Navbar } from './MainPage';
 
 // avatarów jeszcze nie ma
 const avatars = Array.from({ length: 9 }, (_, i) => `avatar${i + 1}.jpg`);
@@ -40,16 +42,46 @@ const RegisterPage = () => {
         setGoToAvatarSelectionDisabled(!allValid);
     }, [firstName, lastName, username, emailAddress, password, confirmedPassword]);
 
-    const handleFinish = () => {
-        toaster.create({
-          description: "Registered successfully!",
-          type: "success",
-          closable: true,
-        });
-        setTimeout(() => {
-            navigate('/login');
-        }, 2000);
-    };
+    React.useEffect(() => {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }, []);
+
+    const handleFinish = async () => {
+        setIsLoading(true);
+        try{
+            await AuthService.register({
+                username: username,
+                email: emailAddress,
+                password: password,
+                firstName: firstName,
+                lastName: lastName
+            });
+
+            toaster.create({
+                description: "Registered successfully! Redirecting to login...",
+                type: "success",
+                closable: true,
+            });
+
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+        } catch (error:any){
+            console.error("Registration error: ",error);
+            const errorMessage = typeof error.response?.data === 'string' ? error.response?.data : "Registration failed. Please check your data";
+
+            toaster.create({
+                description: errorMessage,
+                type: 'error',
+                closable: true,
+            });
+        } finally{
+            setIsLoading(false);
+        }
+
+    }
 
     const handleAvatarButtonClick = () => {
         setOpen(true);
@@ -111,6 +143,7 @@ const RegisterPage = () => {
 
     return (
         <>
+        <Navbar />
         {isLoading ? 
             <Center position="fixed" inset={0} zIndex={1000}>
                 <Spinner size="xl" />
@@ -121,7 +154,7 @@ const RegisterPage = () => {
             backgroundColor={'white'} height={'60vh'} width={'40vw'} borderRadius={12}>
             <Center paddingTop={5}>
                 <Flex minH="dvh" w={"90%"}>
-                <Tabs.Root colorPalette={'cyan'} defaultValue={cards[0].title} width="full" value={value} onValueChange={(e) => setValue(e.value)}>
+                <Tabs.Root colorPalette={'cyan'} defaultValue={cards[0].title} width="full" value={value} onValueChange={(val: any) => setValue(typeof val === 'string' ? val : (val as any).value)}>
                     <Tabs.List>
                     {cards.map((item, index) => (
                         <Tabs.Trigger w={"33%"} color={'cyan.700'} key={index} value={item.title} disabled={item.disabled}>
