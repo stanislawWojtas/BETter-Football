@@ -44,7 +44,8 @@ public class UserService {
     }
 
     public ResponseEntity<Map<String, BigDecimal>> getBalance(Long userId){
-        User u = userRepository.findById(userId).get();
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
         return ResponseEntity.ok(Collections.singletonMap("balance", u.getBalance()));
     }
 
